@@ -1,0 +1,16 @@
+{
+  "name": "thanksbuddy",
+  "version": "1.0.0",
+  "description": "A Facebook message bot to handle your Amazon wishes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matthias Jakobs",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "request": "^2.81.0"
+  }
+}
