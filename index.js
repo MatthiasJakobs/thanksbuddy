@@ -1,6 +1,7 @@
 var express = require('express')
 var request = require('request')
 var bodyParser = require('body-parser')
+var cheerio = require('cheerio')
 var app = express()
 
 var token = "EAAW6LuoW808BAKcAMBukpJR7zoeZAi7Yd8PgsLQVci2kjQrPTn5dWM9Qxd618iGoQZBEMi4KL401qZAZC7wL6GMaNPqzVGuuMSkZABpKDGUCG2dG0GyDI8LgxVWv0ZAkbFPkUMbALyFvVQZBBpexbYqIVssYaqxBLzaRgqIdnim9QAEmWIc3tsK"
@@ -45,6 +46,60 @@ app.post("/webhook", function(req, res){
 	}
 });
 
+function addItem(senderID, url){
+	request(url, (err, response, body) => {
+		if(err){
+			console.error("error");
+			return;
+		}
+		var $ = cheerio.load(body);
+
+		// product name
+		var name = $("#productTitle")
+			.text()
+			.replace(/\s+/g, " ")
+			.replace(/\t+/g, "")
+			.replace(/\n+/g, "")
+			.substr(1)
+			.slice(0,-1)
+		
+		// availability
+		var available = $("#availability")
+			.children()
+			.text()
+			.toLowerCase()
+			.includes("auf lager")
+
+		if(available){
+			// price
+			var price = parseFloat($("#price")
+				.find($(".a-color-price"))
+				.text()
+				.match(/[0-9]+,[0-9]+/i)[0]
+				.replace(",", "."))
+		} else {
+			var price = -1;
+		}
+
+		const infos = {name, url, price, available};
+
+		if(recipients.senderId.products){
+			products = recipients.senderId.products;
+			var contains = false;
+			products.forEach(product => {
+				if(product.url === url){
+					contains = true;
+				}
+			})
+			if(!contains){
+				recipients.senderId.products.push(infos);
+			}
+		} else {
+			recipients.senderId.products = [infos];
+		}
+	});	
+}
+
 function receivedMessage(event){
 	var message = event.message;
 	var text = message.text;
@@ -58,16 +113,7 @@ function receivedMessage(event){
 	splits.forEach(element => {
 		if(element.includes("amazon.de/")){
 			sendMessage(senderId, "got it ;) ");
-
-			if(recipients.senderId.urls){
-				urls = recipients.senderId.urls;
-				if(urls.indexOf(element) <= -1){
-					urls.push(element);
-				}
-			} else {
-				recipients.senderId.urls = [element];
-			}
-			console.log(recipients.senderId.urls)
+			addItem(senderId, element);			
 		}
 	})
 
