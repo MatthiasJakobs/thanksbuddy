@@ -26,8 +26,6 @@ app.get('/webhook', function(req, res) {
 
 app.post("/webhook", function(req, res){
 	var data = req.body;
-	console.log(data);
-
 	if (data.object === "page"){
 		data.entry.forEach(function(entry){
 			var pageID = entry.id;
@@ -36,8 +34,6 @@ app.post("/webhook", function(req, res){
 			entry.messaging.forEach(function(event){
 				if (event.message){
 					receivedMessage(event);
-				} else {
-					console.log("unknown event", event);
 				}
 			});
 	});
@@ -51,9 +47,12 @@ function receivedMessage(event){
 	var message = event.message;
 	var text = message.text;
 	var senderId = event.sender.id;
+	
+	if(text.includes("amazon.de/")){
+		sendMessage(senderId, "got it! ;) ")
+	}
 
-	console.log("message:", message);
-
+	// Echo
 	if(text){
 		sendMessage(senderId, text);
 	}
@@ -76,8 +75,8 @@ function sendMessage(id, text){
 			method: "POST",
 			json: messageData
 		}, function(err, res, body) {
-			if (!err || res.statusCode != 200){
-				console.error("error while sending");
+			if (err){
+				console.error("error while sending", err, res.statusCode);
 			}
 		}
 	);
