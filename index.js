@@ -5,6 +5,8 @@ var app = express()
 
 var token = "EAAW6LuoW808BAKcAMBukpJR7zoeZAi7Yd8PgsLQVci2kjQrPTn5dWM9Qxd618iGoQZBEMi4KL401qZAZC7wL6GMaNPqzVGuuMSkZABpKDGUCG2dG0GyDI8LgxVWv0ZAkbFPkUMbALyFvVQZBBpexbYqIVssYaqxBLzaRgqIdnim9QAEmWIc3tsK"
 
+var recipients = {}
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
@@ -47,10 +49,27 @@ function receivedMessage(event){
 	var message = event.message;
 	var text = message.text;
 	var senderId = event.sender.id;
-	
-	if(text.includes("amazon.de/")){
-		sendMessage(senderId, "got it! ;) ")
+
+	if(!recipients.senderId){
+		recipients.senderId = {}
 	}
+
+	splits = text.split(" ");
+	splits.forEach(element => {
+		if(element.includes("amazon.de/")){
+			sendMessage(senderId, "got it ;) ");
+
+			if(recipients.senderId.urls){
+				urls = recipients.senderId.urls;
+				if(urls.indexOf(element) <= -1){
+					urls.push(element);
+				}
+			} else {
+				recipients.senderId.urls = [element];
+			}
+			console.log(recipients.senderId.urls)
+		}
+	})
 
 	// Echo
 	if(text){
