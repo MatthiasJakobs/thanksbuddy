@@ -2,9 +2,8 @@ var express = require('express')
 var request = require('request')
 var bodyParser = require('body-parser')
 var cheerio = require('cheerio')
+var config = require('./config')
 var app = express()
-
-var token = "EAAW6LuoW808BAKcAMBukpJR7zoeZAi7Yd8PgsLQVci2kjQrPTn5dWM9Qxd618iGoQZBEMi4KL401qZAZC7wL6GMaNPqzVGuuMSkZABpKDGUCG2dG0GyDI8LgxVWv0ZAkbFPkUMbALyFvVQZBBpexbYqIVssYaqxBLzaRgqIdnim9QAEmWIc3tsK"
 
 var recipients = {}
 
@@ -17,7 +16,7 @@ app.get('/', function (req, res) {
 
 app.get('/webhook', function(req, res) {
 	if (req.query['hub.mode'] === 'subscribe' &&
-		req.query['hub.verify_token'] === "testthanks") {
+		req.query['hub.verify_token'] === config.f_secret) {
 			console.log("Validating webhook");
 			res.status(200).send(req.query['hub.challenge']);
 	} else {
@@ -136,7 +135,7 @@ function sendMessage(id, text){
 	request(
 		{
 			uri: 'https://graph.facebook.com/v2.6/me/messages',
-			qs: { access_token: token },
+			qs: { access_token: config.f_token },
 			method: "POST",
 			json: messageData
 		}, function(err, res, body) {
